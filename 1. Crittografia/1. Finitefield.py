@@ -1,7 +1,7 @@
 """
 Un campo finito è un campo algebrico in cui vi è un numero finito di elementi. In particolare, 
 Le operazioni di moltiplicazione e addizione sono chiuse nel campo, ovvero sono definite in modo tale
-da ritornare un numero appartenente al campo stesso (per esempio addizione modulare). 
+da ritornare un numero appartenente al campo stesso (per esempio addizione modulare, vedasi sotto). 
 
 Chiamo p l'ordine (la grandezza) del campo, che avrà quindi elementi {0, 1, 2, ... , p-1}
 Ovviamente, l'ordine sarà sempre maggiore di un unità rispetto all'elemento più grande. 
