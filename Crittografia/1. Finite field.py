@@ -24,9 +24,11 @@ num, prime - 1)
 		return 'FieldElement_{}({})'.format(self.prime, self.num)
 
 	def __eq__(self, other):
-
-		#funzione cbe controlla se due elementi della classe FieldElement sono uguali. 
-		#Ciò è vero solo quando le proprietà sia di num che di prime sono uguali. 
 		if other is None:
 			return False
 		return self.num == other.num and self.prime == other.prime
+
+	def __ne__(self, other):
+		if other is None:
+			return True
+		return self.num != other.num and self.prime != other.prime 
