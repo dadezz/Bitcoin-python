@@ -27,8 +27,7 @@ class Point:
 			and self.a == other.a and self.b == other.b
 	def __ne__(self, other):
 		#alle stesse condizioni se i punti son diversi
-		return self.x != other.x and self.y != other.y \
-			and self.a != other.a and self.b != other.b 
+		return not (self == other) 
 
 """
 Ciò che ci serve di questa curva sono le operazioni. In particolare, c'è una cosa chiamata addizione di punti.
