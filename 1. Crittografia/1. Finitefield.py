@@ -31,8 +31,7 @@ num, prime - 1)
 	def __ne__(self, other):
 		if other is None:
 			return True
-		return self.num != other.num and self.prime != other.prime 
-
+		return not (self == other)
 """
 Uno strumento matematico che si può usare per chiudere l'addizione e la moltiplicazione
 All'interno di un campo finito è l'aritmetica modulare.
