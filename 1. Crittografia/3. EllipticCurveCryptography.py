@@ -113,3 +113,11 @@ def test_add(self):
         p3 = Point(x3, y3, a, b)        # il terzo è quello che dovrebbe essere il risultato
         self.assertEqual(p1 + p2, p3)   # controllo l'uguaglianza (NB: le coordinate le ho scelte io a priori)
 
+"""
+Ovviamente,un punto si può sommare a sé stesso,e poi di nuovo il risultato sommarlo al punto iniziale quante volte si vuole. Si definisce cosi il prodotto per uno scalare.
+Caratteristica peculiare è la difficoltà nel predire la posizione del punto risultante senza effettivamente calcolarne le somme. 
+Se la moltiplicazione è semplice da fare,non lo è la divisione, ed è questa caratteristica che è la base effettiva della crittografia a curva ellittica (d'ora in poi
+Chiamerò questa caratteristica "discrete log problem" o DLP). Un'altra  proprietà è che a un certo multiplo del punto si arriva ad avere il punto all'infinito come risultato.
+Per ogni punto G c'è quindi un set di multipli {G, 2G, 3G, ..., nG}, con nG=0. Questo set è chiamato gruppo finito ciclico. È interessante dal
+Punto di vista matematico perché si comporta bene con le proprietà della somma: aG + bG = (a + b)G.
+unendo queste caratteristiche matematiche al DLP, si arriva alla crittografia.
