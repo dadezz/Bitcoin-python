@@ -121,3 +121,41 @@ Chiamerò questa caratteristica "discrete log problem" o DLP). Un'altra  proprie
 Per ogni punto G c'è quindi un set di multipli {G, 2G, 3G, ..., nG}, con nG=0. Questo set è chiamato gruppo finito ciclico. È interessante dal
 Punto di vista matematico perché si comporta bene con le proprietà della somma: aG + bG = (a + b)G.
 unendo queste caratteristiche matematiche al DLP, si arriva alla crittografia.
+Moltiplicare per uno scalare significa sommare lo stesso punto a sé stesso n volte. I risultati di questa operazione in un campo finito sono particolarmente randomici, e 
+questa caratteristica è ciò che rende la moltiplicazione un'operazione asimmetrica: è facile da calcolare in una direzione ma non in quella inversa (divisione). L'unico modo per
+venirne. All'interno del gruppo ciclico finito, l'operazione (somma di punti) gode di alcune imporantissime proprietà: identià, associazione, commmutazione, inversibilità, chiusura.
+Vediamo quindi come programmare la moltiplicazione per uno scalare:
+"""
+
+#in python, il metodo __rmul__ sovrascrive l'operatore moltiplicazione.
+
+class Point:
+    # ...
+    def __rmul__(self, coefficient):
+        # il prodotto è un'iterazione di somme, quindi basta imporre che inizialmente sia = 0
+        product = self.__class__(None, None, self.a, self.b):
+        # e poi sommare allo 0 il punto in questione (self) n volte (coefficient)
+        # ogni iterazione del ciclo fa questo: sommare un'ulteriore volta il numero a sé stesso
+            for _ in range(coefficient):
+                product += self
+            return product
+
+# questo metodo va bene per coefficienti piccoli, ma quando questi diventano più grandi risulta impossibile calcolare il tutto in un tempo accettabile.
+# usiamo quindi la tecnica dell'espansione binaria:
+
+# class Point:
+    def __rmul (self, coefficient):
+        coef = coefficient
+        current = self 
+        # current rappresenta il punto che è al bit corrente. la prima iterazione nel loop rappresenta
+        # 1*self, la seconda sarà 2*self, la terza 4*self, la quarta 8*self e così via le potenze di due.
+        # viene raddoppiato il punto a ogni iterazione (in binario i coefficienti sono 1, 10, 100, 1000...)
+        result = self.__class__(None, None, self.a, self.b)         # come nel metodo precedente, si parte dallo 0
+        while coef:
+            if coef & 1:        # vediamo se il bit più a destra è un 1. in tal caso, sommiamo il valore del bit corrente
+                result += current
+            current += current      # dobbiamo raddoppiare il punto finché non superiamo la grandezza massima del coefficiente
+            coef >>=1       # spostiamo il coeefficiente di un bit a destra
+        return result 
+
+        
