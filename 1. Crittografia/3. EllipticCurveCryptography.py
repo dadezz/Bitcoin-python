@@ -144,7 +144,7 @@ class Point:
 # usiamo quindi la tecnica dell'espansione binaria:
 
 # class Point:
-    def __rmul (self, coefficient):
+    def __rmul__ (self, coefficient):
         coef = coefficient
         current = self 
         # current rappresenta il punto che è al bit corrente. la prima iterazione nel loop rappresenta
@@ -158,4 +158,96 @@ class Point:
             coef >>=1       # spostiamo il coeefficiente di un bit a destra
         return result 
 
-        
+    """
+    DEFINIRE LA CURVA DI BITCOIN
+    i numeri primi finora usati sono troppo piccoli per evitare un attacco brute force.
+    Una curva ellittica per la crittografia a chiave pubblica è definita a partire da questi parametri:
+    1. si specificano i coefficienti a e b dell'equazione
+    2. si definisce l'ordine (il prime) del campo finito
+    3. si specificano le coordinate x,y del punto G generatore
+    4. si specifica l'ordine del gruppo generato da G, n.
+    
+    I parametri della curva secp256k1 sono:
+    1. a = 0, b = 7
+    2. p = 2^256 - 2^32 - 977
+    3. x(G) = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, y(G) = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
+    4. n = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141.
+    
+    oltre a essere una curva relativamente semplice, è da notare che l'ordine del campo finito è estremamente vicino a 2^256, 
+   la maggior parte dei numeri inferiori a 2^256 è nel campo finito e di conseguenza ogni numero nella curva ha le coordinate x e y esprimibili ognuna in 256 bits. Siccome anche
+   n è molto vicino a 2^256, anche qualsiasi multiplo scalare dei punti è esprimibile in 256 bit. Terzo, 2^256 è un numero enorme, ma ogni numero inferiore può essere memorizzato
+   in 32 bytes, rendendoci di fatto abbastanza facile rappresentare le chiavi private.
+   """
+
+# possiamo verificare con python che il punto G appartenga alla curva:
+gx = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
+gy = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
+p = 2**256 - 2**32 - 977
+print(gy**2 % p == (gx**3 + 7) % p)
+# >>> True
+
+# possiamo verificare anche che il punto G generi un campo ciclico di ordine n:
+import FieldElement, Point
+n = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141
+x = FieldElement(gx, p)
+y = FieldElement(gy, p)
+seven = FieldElement(7, p)
+zero = FieldElement(0, p)
+G = Point(x, y, zero, seven)
+print(n*G)
+# >>> Point(infinity).
+
+# Siccome sappiamo la curva con cui lavoreremo, possiamo creare una subclass per usare esclusivamente i parametri di secp256k1
+
+P = 2**256 - 2**32 - 977
+class S256Field(FieldElement):
+    
+    # facciamo una sottoclasse in modo da non dover specificare P ogni volta.
+    def __init__(self, num, prime=None):
+        super().__init__(num=num, prime=P)
+    
+    # vogliamo rappresentare il numero sempre con 64 caratteri, vedendo anche gli zeri iniziali
+    def __repr__(self):
+        return '{:x}'.format(self.num).zfill(64)
+
+# Allo stesso modo, possiamo definire la sottoclasse che definisce i punti della curva
+
+A, B = 0, 7
+class S256Point(Point):
+    
+    def __init__(self, x, y, a=None, b=None):       # None significa che non serve che venga inserito (perché assegnato successivamente nella sottoclasse)
+        a, b = S256Field(A), S256Field(B)
+    if type(x) == int:
+        super().__init__(x=S256Field(x), y=S256Field(y), a=a, b=b)
+    else:       # nel caso inizializzassimo il punto all'infinito
+        super().__init__(x=x, y=y, a=a, b=b)
+
+"""
+Abbiamo ora un modo più facile per inizializzare un punto della curva secp256k1, senza dover secificare ogni volta i valori di a e b.
+Possiamo anche definire __rmul__ in modo un po' più efficiente, dal momento che conosciamo l'ordine del gruppo, n.
+(usiamo N maiuscolo come convenzione per definire una costante e non una variabile)
+"""
+N = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141
+class S256Point(Point):
+    def __rmul__(self, coefficient):
+        coef = coefficient % N      # possiamo passare al modulo n perché nG = 0
+        return super().__rmul__(coef)
+    
+# Possiamo quindi adesso definire in modo diretto il punto G:
+G = S256Point(0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 
+             0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8)
+
+"""
+Abbiamo ora tutto ciò che serve per fare le operazioni di crittografia a chiave pubblica. L'operazione chiave che ci serve è P = eG, che è asimmetrico: possiamo
+facilmente calcolare P se conosciamo e e G, ma non abbiamo modo di ricavare e.
+Generalmente, chiamiamo e la chiave privata e P la chiave pubblica. Da notare che la chiave privata è un singolo numero di 256 bit, mentre la chiave pubblica è una coppia
+di coordinate (x, y) in cui entrambe sono numeri di 256bit.
+
+FIRMA E VERIFICA
+Vogliamo provare che siamo in possesso del numero segreto "e" (la chiave privata), senza mostrarla in chiaro. Lo facciamo inserendo un target nel calcolo e raggiungendo successivamente
+quel target. Un esempio per capire cosa si intende: per dimostrare di avere una buona mira, non bisogna tirare una palla e poi dire che il target che avevamo era il punto che è andata
+a colpire, bisogna invece prima annunciare qual'è il nostro target, il nostro bersaglio, e solo successivamente dimostrare di essere in grado di colpirlo.
+"""
+
+    
+
