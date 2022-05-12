@@ -247,6 +247,12 @@ FIRMA E VERIFICA
 Vogliamo provare che siamo in possesso del numero segreto "e" (la chiave privata), senza mostrarla in chiaro. Lo facciamo inserendo un target nel calcolo e raggiungendo successivamente
 quel target. Un esempio per capire cosa si intende: per dimostrare di avere una buona mira, non bisogna tirare una palla e poi dire che il target che avevamo era il punto che è andata
 a colpire, bisogna invece prima annunciare qual'è il nostro target, il nostro bersaglio, e solo successivamente dimostrare di essere in grado di colpirlo.
+L'algoritmo che permette di "annunciare" il target è detto signature algorithm. Nel nostro caso si chiama Elliptic Curve Digital Signature Algorithm, in breve ECDSA. vediamo come funziona:
+Nel nostro caso, il segreto da mantenere è "e", che soddisfa eG=P (P è la chiave pubblica, e è la chiave privata). Il nostro target è un numero casuale di 256bit, che chiamiamo k.
+Facciamo quindi kG=R. Adesso è R il target che stiamo puntando. Ci interessa solo la coordinata x di R, che chiamiamo r. (La r sta per random).
+a questo punto, la seguente equazione è equivalente al DLP: uG+vP=kG, dove k è stato scelto randomicamente, u,v≠0 possono essere scelti da chi firma e G,P sono conosciuti. Ciò
+è dovuto al fatto che uG+vP=kG implica vP=(k-u)G. Siccome è diverso da 0, possiamo dividere per v: P=((k-u)/v)G. Se conosciamo e, ovvero la chiave privata, abbiamo:
+eG=((k-u)/v)G, da cui e=(k-u)/v. We
 """
 
     
