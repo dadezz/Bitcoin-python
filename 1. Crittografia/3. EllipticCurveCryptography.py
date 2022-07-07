@@ -250,9 +250,32 @@ a colpire, bisogna invece prima annunciare qual'è il nostro target, il nostro b
 L'algoritmo che permette di "annunciare" il target è detto signature algorithm. Nel nostro caso si chiama Elliptic Curve Digital Signature Algorithm, in breve ECDSA. vediamo come funziona:
 Nel nostro caso, il segreto da mantenere è "e", che soddisfa eG=P (P è la chiave pubblica, e è la chiave privata). Il nostro target è un numero casuale di 256bit, che chiamiamo k.
 Facciamo quindi kG=R. Adesso è R il target che stiamo puntando. Ci interessa solo la coordinata x di R, che chiamiamo r. (La r sta per random).
-a questo punto, la seguente equazione è equivalente al DLP: uG+vP=kG, dove k è stato scelto randomicamente, u,v≠0 possono essere scelti da chi firma e G,P sono conosciuti. Ciò
-è dovuto al fatto che uG+vP=kG implica vP=(k-u)G. Siccome è diverso da 0, possiamo dividere per v: P=((k-u)/v)G. Se conosciamo e, ovvero la chiave privata, abbiamo:
-eG=((k-u)/v)G, da cui e=(k-u)/v. We
+a questo punto, la seguente equazione è equivalente al DLP: uG+vP=kG, dove k è stato scelto randomicamente, u,v≠0 possono essere scelti da chi firma e G,P sono conosciuti. 
+Ciò è dovuto al fatto che uG+vP=kG implica vP=(k-u)G. 
+Siccome è diverso da 0, possiamo dividere per v: P=((k-u)/v)G. 
+Se conosciamo e, ovvero la chiave privata, abbiamo:eG=((k-u)/v)G, da cui e=(k-u)/v.
+Ciò significa che qualsiasi coppia (u,v) che soddisfa la precedente equazione è sufficiente. Se cnon conoscessimo e, dovremmo giocare con la coppia (u,v) finché e=(k-u)/v. Se potessimo 
+risolverlo on qualsiasi combinazione di u e v, avremmo risolto P=eG solo conoscendo P e G, in altre parole avremmo rotto il DLP. Ed è questo il punto. Per fornire (u,v) corrette, l'unico
+modo che abbiamo è conoscere il segreto e. 
+
+Tornando all'esempio precedente, ciò di cui non abbiamo discusso è come incorporare nel lancio della palla il target a cui puntiamo. In termini di firma e verifica, l'obiettivo è detto
+signature hash. Un hash è una funzione deterministica che, a partire da un qualsiasi set arbitrario di dati, restituisce un altro dato (univoco) di misura fissa. Questo dato restituito
+è l'impronta digitale del messaggio, e nell'algoritmo di firma viene incorporata questa impronta, non il messaggio iniziale. Se il mio obbiettivo fosse un uomo, potrei usare le sue impronte
+digitali al posto suo, perché tanto la corrispondenza è univoca. L'impronta rimane sempre la stessa ed è unica per ogni persona. Ugualmente, l'hash di un set di dati è sempre lo stesso ed 
+è univocamente determinato. 
+Indichiamo l'hash con la lettera z, e lo possiamo incorporare nell'equazione in questo modo: u=z/s, v=r/s.
+Possiamo calcolare s:
+uG + vP = R = kG
+uG + veG = kG
+u + ve = k
+z/s + re/s = k
+(z + re)/s = k
+s = (z + re)/k
+Questa è la base del signature algorithm, e la verifica è diretta:
+uG + vP = (z/s)G + (re/s)G = ((z + re)/s)G = ((z + re)/((z + re)/k))G = kG = (r,y)
+
+
+
 """
 
     
