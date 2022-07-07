@@ -274,9 +274,37 @@ s = (z + re)/k
 Questa è la base del signature algorithm, e la verifica è diretta:
 uG + vP = (z/s)G + (re/s)G = ((z + re)/s)G = ((z + re)/((z + re)/k))G = kG = (r,y)
 
+Dalla teoria alla pratica:
 
+In pratica, io ho la coppia di chiavi pubblica e privata (prvK e PubK), l'hash del messaggio (z). Scelgo quindi un secondo numero da mantenere segreto (k). 
+Da questo numero posso calcolare r, che è la coordinata x del punto che si ottiene moltiplicando il generatore (G) per il numero segreto k. 
+La firma s = (z + r*prvK)/k ha quindi due elmenti, k e prvK, che sono privati e non si possono direttamente ricavare, mentre sono pubblici r, s, z e pubK (che ricordiamo
+essere la chiave privata moltiplicata per il generatore G).
+La verifica è di facile effettuazione. Mi ricavo il punto R' a partire dalla firma ricevuta: R' = (z*G + r*PubK)/s. Chiamo, analogamente a prima, r' la coordinata x di questo punto.
+Non mi resta quindi controllare che r' == r (che ricordiamo essere pubblico). Se la condizione si verifica, ecco che ho la prova che l'utente che mi ha fornito la firma possiede
+a tutti gli effetti la chiave privata, senza che questa sia mai stata effettivamente esposta.
+
+Riassumendo, questi gli step:
+1. Conosciamo z, l'hash del messaggio. Ci vengono dati (r, s) come firma. Conosciamo inoltre la chiave pubblica P.
+2. Calcoliamo u = z/s, v = r/s
+3. Calcoliamo uG + vP = R
+4. Se la coordinata x di R è uguale a r, la firma è valida.
+Questo perché, dal momento che r è usato nell'operazione di verifica (che calcola r stesso), l'unico modo per conoscerlo prima di ricavarlo è essere in possesso della chiave privata.
 
 """
 
-    
+#VERIFICA DI UNA FIRMA
+
+z = 0xbc62d4b80d9e36da29c16c5d4d9f11731f36052c72401a76c23c0fb5a9b74423  #hash 
+r = 0x37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6  #coordinata x di R
+s = 0x8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec  #firma
+px = 0x04519fac3d910ca7e7138f7013706f619fa8f033e6ec6e09370ea38cee6a7574 #coord della pubKey
+py = 0x82b51eab8c27c66e26c858a079bcdf4f1ada34cec420cafc7eac1a42216fb6c4
+P = S256Point(px, py)       #chiave pubblica
+s_inv = pow(s, N-2, N)      #1/s nel FiniteField, usando il piccolo teorema di Fermat
+u = z * s_inv % N           #u = z/s
+v = r * s_inv % N           #v = r/s
+r1 = (u*G + v*point).x.num  #uG + vP = (r,y). ci serve verificare la coordinata x
+#>>> print(r1 == r)
+#>>> True se la verifica è riuscita, False altrimenti.
 
