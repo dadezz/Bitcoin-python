@@ -371,3 +371,10 @@ point = e*G                                         #la chiave pubblica deve ess
             return Signature(r, s)                      #L'oggetto firma l'abbiamo definito in precedenza
 
 # Si rimanda a ../4.CorollarioK la spiegazione sull'importanza (e derivazione) di un k randomico e unico
+
+
+"""
+CONCLUSIONI
+abbiamo visto l'ECDSA e sappiamo ora provare che siamo in possesso di una chiave privata semplicemente firmando un messaggio fornitoci, e sappiamo verificare una firma altrui.
+Possiamo ora utilizzare queste strutture per far funzionare il network
+"""
