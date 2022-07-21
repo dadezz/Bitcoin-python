@@ -3,5 +3,5 @@ Sviluppo di Bitcoin in python.
 
 Codici ed esercizi fatti miei dal manuale di Jimmy Song: Programming Bitcoin: Learn How to Program Bitcoin from Scratch. 
 
-Da notare che l'intera repo, a conclusione, risulterà nel riassunto traduzione dell'intero libro
+NON E' CURATA LA FORMA. Al momento, sto studiando i contenuti approfittandone per una sommaria traduzione, che solo alla fine sarà revisionata, sistemata e resa più fruibile e scorrevole
 
