@@ -370,4 +370,4 @@ point = e*G                                         #la chiave pubblica deve ess
                 s = N - s
             return Signature(r, s)                      #L'oggetto firma l'abbiamo definito in precedenza
 
-# Si rimanda a ../CorollarioK la spiegazione sull'importanza (e derivazione) di un k randomico e unico
+# Si rimanda a ../4.CorollarioK la spiegazione sull'importanza (e derivazione) di un k randomico e unico
