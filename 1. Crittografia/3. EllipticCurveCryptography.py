@@ -308,3 +308,66 @@ r1 = (u*G + v*point).x.num  #uG + vP = (r,y). ci serve verificare la coordinata 
 #>>> print(r1 == r)
 #>>> True se la verifica è riuscita, False altrimenti.
 
+# Formalizziamo quanto fatto sopra abbiamo già la classe S256Point, creiamo la classe Signature che contiene i valori r e s:
+
+    class Signature:
+        def __init__(self, r, s):   #i due elementi costituenti la firma
+            self.r = r
+            self.s = s
+        
+        def __repr__(self):
+            return 'Signature({:x},{:x})'.format(self.r, self.s) #rappresentazione della firma
+            
+#Possiamo ora scrivere il metodo che verifica la firma
+   
+    class S256Point(Point):
+        #...
+        def verify(self, z, sig):
+            s_inv = pow(sig.s, N - 2, N)    #come prima, piccolo teorema di Fermat
+            u = z * s_inv % N               #u = z/s
+            v = sig.r * s_inv % N           #v = r/s
+            total = u * G + v * self        #uG + vP = (r,y). ci serve verificare la coordinata x
+            return total.x.num == sig.r     #verifico
+
+"""        
+FIRMA
+A questo punto, avendo capito come funziona la verifica, l'algoritmo di firma è abbastanza ovvio. L'unica cosa che manca è scegliere quale k usare. Random è la scelta migliore
+Si procede in questo modo:
+1. Ci viene fornito z e conosciamo la chiave privata tale che eG=P
+2. Scegliamo un k random
+3. Calcoliamo r=kG ed estrapoliamo r 
+4. Calcoliamo  Calculate s = (z + re)/k
+5. Fatto. La firma è (r, s)
+
+Si noti che la pubkey P deve essere trasmessa a chiunque voglia verificare la firma, che deve anche conoscere z. Vedremo più avanti che z è computata e che P e inviata insieme alla firma
+Possiamo a questo punto creare la firma, ci serviamo di alcune primitive che abbiamo (S25Point, G, N, hash256)
+"""
+e = int.from_bytes(hash256(b'my secret'), 'big')    #è un esempio di "brain wallet", la chiave è un segreto che si tiene a mente
+z = int.from_bytes(hash256(b'my message'), 'big')   #hash del messaggio
+k = 1234567890                                      #per semplicità, usiamo un k fissato. Ricordiamo che va scelto randomicamente.
+r = (k*G).x.num                                     #kG = (r,y), e prendiamo la coordinata x
+k_inv = pow(k, N-2, N)
+s = (z+r*e) * k_inv % N                             #s = (z + re)/k
+point = e*G                                         #la chiave pubblica deve essere conosciuta da chi verifica
+
+#FORMALIZZIAMO IL TUTTO
+
+    class PrivateKey:                               #contiene la nostra coppia di chiavi
+        def __init__(self, secret):
+            self.secret = secret
+            self.point = secret * G
+            
+        def hex(self):
+            return '{:x}'.format(self.secret).zfill(64) #rappresentato come numero esadecimale di 64 cifre (eventualmente coi dovuti 0 davanti)
+        
+        #creiamo il metodo per la firma:
+        def sign(self, z):
+            k = randint(0,N)                            #IMPORTANTE!!! NON USARE LA LIBRERIA RANDOM, MA UNA FONTE DI ENTROPIA VERA. Usiamo qui randint a puro scopo didattico
+            r = (k*G).x.num
+            k_inv = pow(k, N-2, N)
+            s = (z + r*self.secret) * k_inv % N         #s = (z + re)/k
+            if s > N/2:                                 #per ragioni di malleabilità, utilizzando un s basso otterremo nodi per inoltrare le nostre transazioni.
+                s = N - s
+            return Signature(r, s)                      #L'oggetto firma l'abbiamo definito in precedenza
+
+# Si rimanda a ../CorollarioK la spiegazione sull'importanza (e derivazione) di un k randomico e unico
